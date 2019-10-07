@@ -1,6 +1,7 @@
  <template>
   <div class="home">
     <van-nav-bar title="首页" />
+
     <!-- tab 标签页 -->
     <van-tabs v-model="tabActive" @change="onTabChange">
       <!-- tab 栏 -->
@@ -13,6 +14,10 @@
           </van-list>
         </van-pull-refresh>
       </van-tab>
+      <!-- 右边要一个图标 -->
+       <div class="my-right-tab" >
+          <van-icon name="wap-nav"/>
+       </div>
     </van-tabs>
   </div>
 </template>
@@ -21,7 +26,7 @@
 // 导入获取频道列表的请求方法
 import { getChannel } from "../../app/channels.js";
 // 导入获取频道详情(频道新闻推荐)
-import { getArticleList } from '../../app/articles.js'
+import { getArticleByTime } from '../../app/articles.js'
 
 export default {
   name: "home",
@@ -41,6 +46,12 @@ export default {
   },
 
   methods: {
+    // 值改变事件
+    async onTabChange(name, title){
+       let res = await this.articleDetail()
+       this.channelDetail = res.data.data.results 
+    },
+
     //封装获取频道详情的方法
     async articleDetail(){
          // 当前频道的id
@@ -49,7 +60,7 @@ export default {
         let timestamp = Date.now() 
         let with_top = 1
         // 发送请求 
-        let res = await getArticleList({
+        let res = await getArticleByTime({
             channel_id,
             timestamp,
             with_top
@@ -58,9 +69,10 @@ export default {
         if (res.data.data.results.length == 0) {
            this.finished = true 
         }
-        console.log(res)
+        //console.log(res)
         return res
     },
+
     //下拉刷新触发事件
     async onRefresh() {
        let res = await this.articleDetail()
@@ -68,13 +80,7 @@ export default {
        this.channelDetail.unshift(...res.data.data.results)
        this.pullLoading = false   // 加载完成 
     },
-
-    // 值改变事件
-    async onTabChange(name, title){
-       let res = await this.articleDetail()
-       this.channelDetail = res.data.data.results 
-    },
-
+    
     // 格子没有铺满就会调用这个事件
      async onLoad(){
         let res = await this.articleDetail()
@@ -96,6 +102,20 @@ export default {
  <style lang="less" scoped>
 .home {
   margin-top: 46px;
+  margin-bottom: 46px;
+     /deep/.van-tabs_wrap {
+        position: fixed !important;
+        top: 46px;
+        left: 0;
+        z-index: 999;
+        width: 80%; 
+        color: red;
+     }
+     .my-right-tab {
+         position: fixed;
+         right: 10px;
+         top: 55px;
+     }
 }
 </style>
  
